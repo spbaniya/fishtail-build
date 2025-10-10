@@ -13,21 +13,25 @@ export default function MenuSection({ title, subtitle, items, image }: MenuSecti
 
   return (
     <div className="mb-16" data-testid={`menu-section-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-      <div className="mb-8">
+      <div className="mb-12">
         {image && (
-          <div className="w-full h-48 md:h-64 mb-8 rounded-xl overflow-hidden shadow-lg">
+          <div className="w-full h-56 md:h-72 mb-10 rounded-2xl overflow-hidden shadow-2xl relative group">
             <img 
               src={image} 
               alt={title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
         )}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground border-b-4 border-primary inline-block pb-3">
-          {title}
-        </h2>
+        <div className="relative">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-2 relative inline-block">
+            {title}
+            <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/70 to-transparent"></div>
+          </h2>
+        </div>
         {subtitle && (
-          <p className="text-muted-foreground mt-4 text-base md:text-lg leading-relaxed">
+          <p className="text-muted-foreground mt-6 text-lg md:text-xl leading-relaxed max-w-3xl">
             {subtitle}
           </p>
         )}

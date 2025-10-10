@@ -16,15 +16,19 @@ export default function Home() {
       <Navigation />
       <Hero />
       
-      <section id="menu" className="py-20 md:py-32">
+      <section id="menu" className="py-20 md:py-32 bg-gradient-to-b from-background via-muted/20 to-background">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6">
+          <div className="text-center mb-20">
+            <div className="inline-block mb-6">
+              <div className="w-20 h-1 bg-primary mb-4 mx-auto"></div>
+            </div>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-8 relative inline-block">
               Our Menu
+              <div className="absolute -bottom-3 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              All dishes are made to your taste: MILD, MEDIUM or HOT<br />
-              (Extra Hot & Indian Hot are also available)
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mt-8">
+              All dishes are made to your taste: <span className="font-bold text-primary">MILD, MEDIUM or HOT</span><br />
+              <span className="text-base">(Extra Hot & Indian Hot are also available)</span>
             </p>
           </div>
           

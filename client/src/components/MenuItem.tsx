@@ -24,19 +24,20 @@ export default function MenuItem({ item }: MenuItemProps) {
   };
 
   return (
-    <Card className="hover-elevate transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border-card-border" data-testid={`menu-item-${item.id}`}>
-      <CardHeader className="pb-3">
+    <Card className="hover-elevate transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl border-l-4 border-l-primary/20 hover:border-l-primary group overflow-hidden" data-testid={`menu-item-${item.id}`}>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+      <CardHeader className="pb-4 relative z-10">
         <div className="flex items-start justify-between gap-4">
-          <CardTitle className="text-lg md:text-xl font-serif leading-tight font-semibold">
+          <CardTitle className="text-xl md:text-2xl font-serif leading-tight font-bold group-hover:text-primary transition-colors">
             {item.name}
           </CardTitle>
-          <span className="font-sans text-lg md:text-xl font-bold text-primary whitespace-nowrap" data-testid={`price-${item.id}`}>
+          <span className="font-sans text-xl md:text-2xl font-bold text-primary whitespace-nowrap bg-primary/10 px-3 py-1 rounded-lg" data-testid={`price-${item.id}`}>
             {item.price}
           </span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <CardDescription className="text-sm md:text-base leading-relaxed text-muted-foreground">
+      <CardContent className="space-y-4 relative z-10">
+        <CardDescription className="text-base md:text-lg leading-relaxed text-muted-foreground">
           {item.description}
         </CardDescription>
         {item.dietaryInfo.length > 0 && (
@@ -45,7 +46,7 @@ export default function MenuItem({ item }: MenuItemProps) {
               <Badge 
                 key={idx} 
                 variant="secondary" 
-                className={`text-xs px-3 py-1 font-medium ${getDietaryBadgeColor(info)}`}
+                className={`text-xs px-3 py-1.5 font-semibold shadow-sm ${getDietaryBadgeColor(info)}`}
               >
                 {info}
               </Badge>

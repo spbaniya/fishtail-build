@@ -4,20 +4,24 @@ import { Button } from "@/components/ui/button";
 
 export default function Location() {
   return (
-    <section id="location" className="py-20 md:py-32">
+    <section id="location" className="py-20 md:py-32 bg-gradient-to-b from-background to-muted/20">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6">
+        <div className="text-center mb-20">
+          <div className="inline-block mb-6">
+            <div className="w-20 h-1 bg-primary mb-4 mx-auto"></div>
+          </div>
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-8 relative inline-block">
             Visit Us
+            <div className="absolute -bottom-3 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground">
+          <p className="text-xl md:text-2xl text-muted-foreground mt-8">
             Located in the heart of Denver, Colorado
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-start">
-          <Card className="border-card-border">
-            <CardContent className="p-8 space-y-8">
+        <div className="grid md:grid-cols-2 gap-10 items-start">
+          <Card className="border-l-4 border-l-primary/30 hover:border-l-primary transition-all duration-300 shadow-xl hover:shadow-2xl">
+            <CardContent className="p-10 space-y-10">
               <div className="flex items-start gap-4">
                 <MapPin className="w-7 h-7 text-primary flex-shrink-0 mt-1" />
                 <div>
@@ -63,7 +67,7 @@ export default function Location() {
                   rel="noopener noreferrer"
                   data-testid="button-directions"
                 >
-                  <Button className="w-full font-semibold" size="lg">
+                  <Button className="w-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all" size="lg">
                     Get Directions
                   </Button>
                 </a>
@@ -71,7 +75,7 @@ export default function Location() {
             </CardContent>
           </Card>
 
-          <div className="h-96 md:h-full min-h-[400px] rounded-lg overflow-hidden shadow-lg">
+          <div className="h-96 md:h-full min-h-[400px] rounded-2xl overflow-hidden shadow-2xl ring-4 ring-primary/10 hover:ring-primary/30 transition-all duration-300">
             <iframe
               title="Restaurant Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3067.4654!2d-104.9748768!3d39.7332173!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x876c7f2daa53c4ef%3A0xab22f8c7ef485cd7!2sFishtail%20Cuisine%20of%20India%20and%20Nepal!5e0!3m2!1sen!2sus!4v1234567890123"

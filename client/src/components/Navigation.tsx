@@ -33,15 +33,17 @@ export default function Navigation() {
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled 
-            ? 'bg-background/95 backdrop-blur-md shadow-md border-b border-border' 
-            : 'bg-transparent'
+            ? 'bg-background/95 backdrop-blur-md shadow-lg border-b border-border' 
+            : 'bg-black/30 backdrop-blur-sm'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="font-serif text-xl md:text-2xl font-bold text-foreground hover-elevate"
+              className={`font-serif text-xl md:text-2xl font-bold hover-elevate transition-colors ${
+                isScrolled ? 'text-foreground' : 'text-white'
+              }`}
               data-testid="button-logo"
             >
               Fishtail Cuisine
@@ -52,14 +54,16 @@ export default function Navigation() {
                 <button
                   key={link.id}
                   onClick={() => scrollToSection(link.id)}
-                  className="text-foreground hover:text-primary transition-colors font-medium text-base relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full"
+                  className={`hover:text-primary transition-colors font-medium text-base relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full ${
+                    isScrolled ? 'text-foreground' : 'text-white'
+                  }`}
                   data-testid={`button-nav-${link.id}`}
                 >
                   {link.label}
                 </button>
               ))}
               <a href="tel:+17203289842" data-testid="button-call">
-                <Button variant="default" className="gap-2 font-semibold">
+                <Button variant="default" className="gap-2 font-semibold shadow-lg">
                   <Phone className="w-4 h-4" />
                   <span className="hidden lg:inline">Call Now</span>
                 </Button>
@@ -67,7 +71,9 @@ export default function Navigation() {
             </div>
 
             <button
-              className="md:hidden text-foreground"
+              className={`md:hidden transition-colors ${
+                isScrolled ? 'text-foreground' : 'text-white'
+              }`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               data-testid="button-mobile-menu"
             >
