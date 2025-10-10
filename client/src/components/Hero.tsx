@@ -19,13 +19,13 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
       
       <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
-        <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6">
+        <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 tracking-tight leading-tight">
           Fishtail Cuisine
         </h1>
-        <p className="text-2xl md:text-3xl lg:text-4xl font-serif mb-4 md:mb-6 text-gold">
+        <p className="text-2xl md:text-4xl lg:text-5xl font-serif mb-6 md:mb-8 text-secondary font-medium italic">
           of India and Nepal
         </p>
-        <p className="text-lg md:text-xl lg:text-2xl mb-8 md:mb-12 max-w-3xl mx-auto font-light">
+        <p className="text-lg md:text-xl lg:text-2xl mb-10 md:mb-14 max-w-3xl mx-auto font-light tracking-wide">
           Authentic Flavors of the Himalayas in the Heart of Denver
         </p>
         
@@ -50,22 +50,14 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex justify-center">
           <Button 
             size="lg" 
-            className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 border-2 border-primary-border"
+            className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 border-2 border-primary-border font-semibold shadow-2xl"
             onClick={scrollToMenu}
             data-testid="button-view-menu"
           >
             View Menu
-          </Button>
-          <Button 
-            size="lg" 
-            variant="outline"
-            className="text-lg px-8 py-6 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20"
-            data-testid="button-order-online"
-          >
-            Order Online
           </Button>
         </div>
       </div>

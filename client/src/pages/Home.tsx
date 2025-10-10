@@ -18,11 +18,11 @@ export default function Home() {
       
       <section id="menu" className="py-20 md:py-32">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6">
               Our Menu
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               All dishes are made to your taste: MILD, MEDIUM or HOT<br />
               (Extra Hot & Indian Hot are also available)
             </p>

@@ -15,7 +15,7 @@ export default function MenuSection({ title, subtitle, items, image }: MenuSecti
     <div className="mb-16" data-testid={`menu-section-${title.toLowerCase().replace(/\s+/g, '-')}`}>
       <div className="mb-8">
         {image && (
-          <div className="w-full h-48 md:h-64 mb-6 rounded-lg overflow-hidden">
+          <div className="w-full h-48 md:h-64 mb-8 rounded-xl overflow-hidden shadow-lg">
             <img 
               src={image} 
               alt={title}
@@ -23,11 +23,11 @@ export default function MenuSection({ title, subtitle, items, image }: MenuSecti
             />
           </div>
         )}
-        <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground border-b-4 border-gold inline-block pb-2">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground border-b-4 border-primary inline-block pb-3">
           {title}
         </h2>
         {subtitle && (
-          <p className="text-muted-foreground mt-3 text-base md:text-lg">
+          <p className="text-muted-foreground mt-4 text-base md:text-lg leading-relaxed">
             {subtitle}
           </p>
         )}

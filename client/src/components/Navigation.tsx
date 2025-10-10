@@ -52,14 +52,14 @@ export default function Navigation() {
                 <button
                   key={link.id}
                   onClick={() => scrollToSection(link.id)}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className="text-foreground hover:text-primary transition-colors font-medium text-base relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full"
                   data-testid={`button-nav-${link.id}`}
                 >
                   {link.label}
                 </button>
               ))}
               <a href="tel:+17203289842" data-testid="button-call">
-                <Button variant="default" className="gap-2">
+                <Button variant="default" className="gap-2 font-semibold">
                   <Phone className="w-4 h-4" />
                   <span className="hidden lg:inline">Call Now</span>
                 </Button>

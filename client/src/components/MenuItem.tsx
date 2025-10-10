@@ -24,19 +24,19 @@ export default function MenuItem({ item }: MenuItemProps) {
   };
 
   return (
-    <Card className="hover-elevate transition-transform hover:-translate-y-1" data-testid={`menu-item-${item.id}`}>
+    <Card className="hover-elevate transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border-card-border" data-testid={`menu-item-${item.id}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
-          <CardTitle className="text-lg md:text-xl font-serif leading-tight">
+          <CardTitle className="text-lg md:text-xl font-serif leading-tight font-semibold">
             {item.name}
           </CardTitle>
-          <span className="font-mono text-lg md:text-xl font-medium text-primary whitespace-nowrap" data-testid={`price-${item.id}`}>
+          <span className="font-sans text-lg md:text-xl font-bold text-primary whitespace-nowrap" data-testid={`price-${item.id}`}>
             {item.price}
           </span>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <CardDescription className="text-sm md:text-base leading-relaxed">
+        <CardDescription className="text-sm md:text-base leading-relaxed text-muted-foreground">
           {item.description}
         </CardDescription>
         {item.dietaryInfo.length > 0 && (
@@ -45,7 +45,7 @@ export default function MenuItem({ item }: MenuItemProps) {
               <Badge 
                 key={idx} 
                 variant="secondary" 
-                className={`text-xs px-2 py-1 ${getDietaryBadgeColor(info)}`}
+                className={`text-xs px-3 py-1 font-medium ${getDietaryBadgeColor(info)}`}
               >
                 {info}
               </Badge>
