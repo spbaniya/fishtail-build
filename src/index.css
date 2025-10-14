@@ -1,0 +1,294 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Community Platform Design System - Warm, Human-Centered Colors */
+
+@layer base {
+  :root {
+    /* Background & Surface Colors - Light Mode */
+    --background: 0 0% 100%;
+    --surface: 210 20% 98%;
+    --surface-elevated: 0 0% 100%;
+
+    /* Text Colors - Light Mode - Improved Contrast */
+    --foreground: 222 84% 4.9%;
+    --foreground-muted: 215 25% 35%;
+    --foreground-subtle: 210 25% 25%;
+
+    /* Brand Colors - Dynamic (set by theme context) */
+    --primary: 4 65% 66%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 4 65% 60%;
+
+    --secondary: 140 35% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 140 35% 40%;
+
+    --accent: 45 85% 60%;
+    --accent-foreground: 222 84% 4.9%;
+    --accent-hover: 45 85% 55%;
+
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 84% 4.9%;
+
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 100%;
+
+    /* Interactive Elements */
+    --border: 214 32% 91%;
+    --border-hover: 214 32% 85%;
+    --input: 214 32% 91%;
+    --ring: var(--primary);
+
+    /* Shadows & Depth */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* Layout */
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-lg: 1rem;
+
+    /* Component-specific tokens */
+    --card: var(--surface-elevated);
+    --card-foreground: var(--foreground);
+
+    --popover: var(--surface-elevated);
+    --popover-foreground: var(--foreground);
+
+    --muted: var(--surface);
+    --muted-foreground: var(--foreground-muted);
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+  }
+
+  .dark {
+    /* Background & Surface Colors - Dark Mode */
+    --background: 222 84% 4.9%;
+    --surface: 217 32% 10%;
+    --surface-elevated: 217 32% 12%;
+
+    /* Text Colors - Dark Mode - Improved Contrast */
+    --foreground: 210 20% 98%;
+    --foreground-muted: 215 20% 65%;
+    --foreground-subtle: 217 15% 75%;
+
+    /* Interactive Elements - Dark Mode */
+    --border: 217 32% 17.5%;
+    --border-hover: 217 32% 22%;
+    --input: 217 32% 17.5%;
+
+    /* Shadows & Depth - Dark Mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+
+    /* Component-specific tokens - Dark Mode */
+    --card: var(--surface-elevated);
+    --card-foreground: var(--foreground);
+
+    --popover: var(--surface-elevated);
+    --popover-foreground: var(--foreground);
+
+    --muted: var(--surface);
+    --muted-foreground: var(--foreground-muted);
+
+    --accent-foreground: var(--foreground);
+    --warning-foreground: 222 84% 4.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Typography Scale - Enhanced */
+  .text-display {
+    @apply text-5xl font-bold leading-tight tracking-tight font-bebas text-foreground;
+  }
+
+  .text-headline {
+    @apply text-3xl font-bold leading-tight font-nunito text-foreground;
+  }
+
+  .text-title {
+    @apply text-xl font-semibold leading-snug font-raleway text-foreground;
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed font-inter text-foreground;
+  }
+
+  .text-caption {
+    @apply text-sm text-foreground-muted font-open-sans;
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-nunito font-bold text-foreground;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-6xl font-bebas tracking-wider;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-4xl font-nunito;
+  }
+
+  h3 {
+    @apply text-2xl lg:text-3xl font-raleway;
+  }
+
+  p {
+    @apply text-foreground font-inter leading-relaxed;
+  }
+
+  /* Custom Animations */
+  @keyframes gentle-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-gentle-bounce {
+    animation: gentle-bounce 2s ease-in-out infinite;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+}
+
+@layer components {
+  /* Community Card Styles */
+  .community-card {
+    @apply bg-card border border-border rounded-2xl p-6 transition-all duration-300 shadow-community-sm;
+  }
+
+  .community-card:hover {
+    @apply border-border-hover shadow-community transform-gpu hover:-translate-y-1;
+  }
+
+  /* Button Variants */
+  .btn-community {
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover;
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 font-raleway;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover;
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 font-raleway;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground;
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 font-raleway;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    @apply relative overflow-hidden py-20 px-6 bg-background;
+  }
+
+  /* Themed backgrounds */
+  .themed-bg {
+    @apply bg-surface;
+  }
+
+  .themed-bg-elevated {
+    @apply bg-surface-elevated;
+  }
+
+  .themed-border {
+    @apply border-border;
+  }
+
+  .themed-text {
+    @apply text-foreground;
+  }
+
+  .themed-text-muted {
+    @apply text-foreground-muted;
+  }
+
+  .themed-text-subtle {
+    @apply text-foreground-subtle;
+  }
+}
+
+/* Small custom scrollbar for better visibility in popovers */
+/* WebKit browsers */
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(100,100,100,0.35);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100,100,100,0.35) transparent;
+}
+
+/* contentEditable placeholder using data attributes */
+[data-placeholder] {
+  position: relative;
+}
+[data-placeholder][data-empty="true"]::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  left: 0.25rem;
+  top: 0.25rem;
+  color: rgba(107,114,128,0.8); /* slightly lighter gray */
+  pointer-events: none;
+  font-size: 0.875rem; /* text-sm */
+  opacity: 0;
+  transform-origin: left top;
+  transition: opacity 180ms ease, transform 200ms ease;
+  transform: translateY(2px);
+}
+
+[data-placeholder][data-empty="true"]:not(:focus)::before {
+  opacity: 1;
+  transform: translateY(0);
+}
