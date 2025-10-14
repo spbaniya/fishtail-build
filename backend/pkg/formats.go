@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 // FileFormat defines the interface for different file formats
@@ -84,7 +84,6 @@ func (f *YAMLFormat) Parse(r io.Reader) ([]map[string]any, error) {
 
 func (f *YAMLFormat) Serialize(w io.Writer, data []map[string]any) error {
 	encoder := yaml.NewEncoder(w)
-	encoder.SetIndent(2)
 	return encoder.Encode(data)
 }
 
@@ -126,7 +125,14 @@ func (f *CSVFormat) Parse(r io.Reader) ([]map[string]any, error) {
 		item := make(map[string]any)
 		for i, value := range record {
 			if i < len(headers) {
-				item[headers[i]] = value
+				fieldName := headers[i]
+				// Special handling for tags field
+				if fieldName == "tags" {
+					parsedValue := f.parseTagsField(value)
+					item[fieldName] = parsedValue
+				} else {
+					item[fieldName] = value
+				}
 			} else {
 				// If we have more fields than headers, append to the last field (tags)
 				if len(headers) > 0 {
@@ -143,6 +149,34 @@ func (f *CSVFormat) Parse(r io.Reader) ([]map[string]any, error) {
 	}
 
 	return items, nil
+}
+
+// parseTagsField parses the tags field which can be either a JSON array string or comma-separated values
+func (f *CSVFormat) parseTagsField(value string) []string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return []string{}
+	}
+
+	// Check if it's a JSON array (starts with [ and ends with ])
+	if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
+		var tags []string
+		if err := json.Unmarshal([]byte(value), &tags); err == nil {
+			return tags
+		}
+		// If JSON parsing fails, fall back to splitting by comma
+	}
+
+	// Split by comma and clean up whitespace
+	parts := strings.Split(value, ",")
+	var tags []string
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			tags = append(tags, trimmed)
+		}
+	}
+	return tags
 }
 
 func (f *CSVFormat) Serialize(w io.Writer, data []map[string]any) error {
@@ -173,7 +207,20 @@ func (f *CSVFormat) Serialize(w io.Writer, data []map[string]any) error {
 		var values []string
 		for _, header := range headers {
 			if val, ok := item[header]; ok {
-				values = append(values, fmt.Sprintf("%v", val))
+				if header == "tags" {
+					// Special handling for tags field - serialize as JSON array
+					if tags, ok := val.([]string); ok {
+						if jsonBytes, err := json.Marshal(tags); err == nil {
+							values = append(values, string(jsonBytes))
+						} else {
+							values = append(values, fmt.Sprintf("%v", val))
+						}
+					} else {
+						values = append(values, fmt.Sprintf("%v", val))
+					}
+				} else {
+					values = append(values, fmt.Sprintf("%v", val))
+				}
 			} else {
 				values = append(values, "")
 			}
