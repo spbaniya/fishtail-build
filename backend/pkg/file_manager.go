@@ -939,3 +939,30 @@ func (fm *FileManager) GetFields() ([]string, error) {
 func (fm *FileManager) GetSupportedFormats() []string {
 	return fm.registry.SupportedExtensions()
 }
+
+// Save writes arbitrary data to file (for nested structures)
+func (fm *FileManager) Save(data interface{}) error {
+	fm.mu.Lock()
+	defer fm.mu.Unlock()
+
+	// Convert interface{} to []map[string]any if needed
+	var items []map[string]any
+	switch d := data.(type) {
+	case []map[string]any:
+		items = d
+	case []interface{}:
+		items = make([]map[string]any, len(d))
+		for i, item := range d {
+			if m, ok := item.(map[string]interface{}); ok {
+				items[i] = make(map[string]any)
+				for k, v := range m {
+					items[i][k] = v
+				}
+			}
+		}
+	default:
+		return fmt.Errorf("unsupported data type for Save")
+	}
+
+	return fm.writeToFile(items)
+}

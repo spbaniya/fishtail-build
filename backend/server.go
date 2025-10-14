@@ -348,17 +348,75 @@ func (s *Server) handleCreateItem(c *fiber.Ctx) error {
 }
 
 func (s *Server) handleUpdateItem(c *fiber.Ctx) error {
+	filename := c.Params("filename")
+	id := c.Params("id")
+
+	fm, err := s.initFileManager(filename)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
 	// Parse form data
 	name := c.FormValue("name")
+	description := c.FormValue("description")
 	price := c.FormValue("price")
 	category := c.FormValue("category")
+	dietaryInfoStr := c.FormValue("dietaryInfo")
 
 	if name == "" || price == "" || category == "" {
 		return c.Status(400).JSON(fiber.Map{"error": "Required fields are missing"})
 	}
 
-	// TODO: Implement update logic for nested menu structure
-	return c.JSON(fiber.Map{"success": true, "message": "Item update not yet implemented for nested structure"})
+	// Parse dietary info
+	var dietaryInfo []string
+	if dietaryInfoStr != "" {
+		dietaryInfo = strings.Split(strings.TrimSpace(dietaryInfoStr), ",")
+		for i, info := range dietaryInfo {
+			dietaryInfo[i] = strings.TrimSpace(info)
+		}
+	}
+
+	// Find and update item in nested structure
+	items, _ := fm.Read()
+	updated := false
+
+	for i, section := range items {
+		if sectionItems, ok := section["items"].([]interface{}); ok {
+			for _, it := range sectionItems {
+				if itemMap, ok := it.(map[string]interface{}); ok {
+					if fmt.Sprintf("%v", itemMap["id"]) == id {
+						// Update the item
+						itemMap["name"] = name
+						itemMap["description"] = description
+						itemMap["price"] = price
+						itemMap["category"] = category
+						itemMap["dietaryInfo"] = dietaryInfo
+
+						// Update the section's items array
+						section["items"] = sectionItems
+						items[i] = section
+
+						// Save the entire structure
+						if err := fm.Save(items); err != nil {
+							return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+						}
+
+						updated = true
+						break
+					}
+				}
+			}
+			if updated {
+				break
+			}
+		}
+	}
+
+	if !updated {
+		return c.Status(404).JSON(fiber.Map{"error": "Item not found"})
+	}
+
+	return c.JSON(fiber.Map{"success": true, "message": "Item updated"})
 }
 
 func (s *Server) handleDeleteItem(c *fiber.Ctx) error {
