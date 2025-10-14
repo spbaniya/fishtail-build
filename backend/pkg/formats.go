@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -99,39 +100,44 @@ func (f *YAMLFormat) ContentType() string {
 type CSVFormat struct{}
 
 func (f *CSVFormat) Parse(r io.Reader) ([]map[string]any, error) {
-	data, err := io.ReadAll(r)
+	reader := csv.NewReader(r)
+	reader.TrimLeadingSpace = true
+	reader.FieldsPerRecord = -1 // Allow variable number of fields
+
+	// Read headers
+	headers, err := reader.Read()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read data: %w", err)
-	}
-
-	if len(data) == 0 {
-		return []map[string]any{}, nil
-	}
-
-	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
-	if len(lines) < 2 {
-		return []map[string]any{}, nil
-	}
-
-	headers := strings.Split(lines[0], ",")
-	for i, header := range headers {
-		headers[i] = strings.TrimSpace(header)
+		if err == io.EOF {
+			return []map[string]any{}, nil
+		}
+		return nil, fmt.Errorf("failed to read CSV headers: %w", err)
 	}
 
 	var items []map[string]any
-	for _, line := range lines[1:] {
-		if strings.TrimSpace(line) == "" {
-			continue
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
 		}
-
-		values := strings.Split(line, ",")
-		if len(values) != len(headers) {
-			continue // Skip malformed lines
+		if err != nil {
+			return nil, fmt.Errorf("failed to read CSV record: %w", err)
 		}
 
 		item := make(map[string]any)
-		for i, value := range values {
-			item[headers[i]] = strings.TrimSpace(value)
+		for i, value := range record {
+			if i < len(headers) {
+				item[headers[i]] = value
+			} else {
+				// If we have more fields than headers, append to the last field (tags)
+				if len(headers) > 0 {
+					lastHeader := headers[len(headers)-1]
+					if existing, ok := item[lastHeader].(string); ok {
+						item[lastHeader] = existing + "," + value
+					} else {
+						item[lastHeader] = value
+					}
+				}
+			}
 		}
 		items = append(items, item)
 	}

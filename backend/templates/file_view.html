@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View File</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-4">
+            <a href="/files" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Files</a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4" id="fileTitle">Loading...</h1>
+            <div class="mb-4" id="fileInfo">
+                <p class="text-gray-500">Loading file information...</p>
+            </div>
+
+            <div id="fileContent">
+                <p class="text-gray-500">Loading data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get filename from URL
+        const urlParts = window.location.pathname.split('/');
+        const filename = urlParts[urlParts.length - 1];
+
+        // State management
+        let currentData = {
+            schema: null,
+            items: [],
+            fields: [],
+            currentPage: 1,
+            totalPages: 1,
+            search: '',
+            sortField: '',
+            sortOrder: 'asc'
+        };
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadFileInfo();
+            loadFileData();
+        });
+
+        // Load file information
+        async function loadFileInfo() {
+            try {
+                const response = await fetch(`/api/files/${filename}/info`);
+                const fileInfo = await response.json();
+
+                document.getElementById('fileTitle').textContent = `File: ${fileInfo.name}`;
+                document.getElementById('fileInfo').innerHTML = `
+                    <span class="text-sm text-gray-500">Format: ${fileInfo.format.toUpperCase()}</span>
+                    <span class="text-sm text-gray-500 ml-4">Size: ${(fileInfo.size / 1024).toFixed(1)} KB</span>
+                    <span class="text-sm text-gray-500 ml-4">Items: ${fileInfo.itemCount}</span>
+                    <span class="text-sm text-gray-500 ml-4">Fields: ${fileInfo.fieldCount}</span>
+                    <span class="text-sm text-gray-500 ml-4">Modified: ${fileInfo.modified}</span>
+                `;
+            } catch (error) {
+                document.getElementById('fileInfo').innerHTML = '<p class="text-red-500">Error loading file info: ' + error.message + '</p>';
+            }
+        }
+
+        // Load file data and schema
+        async function loadFileData() {
+            try {
+                // Load schema first for primary key detection
+                const schemaResponse = await fetch(`/api/files/${filename}/fields`);
+                const schemaData = await schemaResponse.json();
+                currentData.fields = schemaData.fields || [];
+
+                // Get primary key from schema (default to 'id')
+                currentData.primaryKey = 'id'; // Default primary key
+                if (filename === 'menu.json') {
+                    currentData.primaryKey = 'id'; // Menu items use 'id'
+                } else if (schemaData.fields && schemaData.fields.length > 0) {
+                    // Look for a field that might be the primary key
+                    const idField = schemaData.fields.find(f => f.name === 'id' || f.name === '_id' || f.primaryKey);
+                    if (idField) {
+                        currentData.primaryKey = idField.name;
+                    }
+                }
+
+                currentData.schema = { fields: currentData.fields, primaryKey: currentData.primaryKey };
+
+                // Load items (this will also update fields from the actual data)
+                await loadItemsWithFilters();
+            } catch (error) {
+                document.getElementById('fileContent').innerHTML = '<p class="text-red-500">Error loading file: ' + error.message + '</p>';
+            }
+        }
+
+        // Display file view
+        function displayFileView() {
+            displayItemsTable();
+        }
+
+        // Display items in table
+        function displayItemsTable() {
+            const container = document.getElementById('fileContent');
+
+            if (currentData.items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500 mb-4">No items found in this file.</p>
+                        <a href="/files/${filename}/create" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Create First Item</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Controls
+            const controls = `
+                <div class="mb-4 flex justify-between items-center">
+                    <div class="flex space-x-4">
+                        <input type="text" id="searchInput" placeholder="Search..." value="${currentData.search}"
+                               class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <select id="sortField" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Sort by...</option>
+                            ${currentData.fields.map(field => `<option value="${field.name}" ${currentData.sortField === field.name ? 'selected' : ''}>${field.name}</option>`).join('')}
+                        </select>
+                        <select id="sortOrder" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="asc" ${currentData.sortOrder === 'asc' ? 'selected' : ''}>Ascending</option>
+                            <option value="desc" ${currentData.sortOrder === 'desc' ? 'selected' : ''}>Descending</option>
+                        </select>
+                    </div>
+                    <a href="/files/${filename}/create" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Create New Item</a>
+                </div>
+            `;
+
+            // Table
+            const table = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                ${currentData.fields.map(field => `<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${field.name}</th>`).join('')}
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${currentData.items.map(item => `
+                                <tr class="hover:bg-gray-50">
+                                    ${currentData.fields.map(field => {
+                const fieldName = field.name;
+                const value = item[fieldName];
+                let displayValue = '';
+
+                if (value === null || value === undefined) {
+                    displayValue = '';
+                } else if (Array.isArray(value)) {
+                    // Handle array fields
+                    if (value.length === 0) {
+                        displayValue = 'No items';
+                    } else if (typeof value[0] === 'object') {
+                        // Array of objects - show count
+                        displayValue = `${value.length} items`;
+                    } else {
+                        // Array of primitives - show comma-separated
+                        displayValue = value.join(', ');
+                    }
+                } else if (typeof value === 'object') {
+                    // Handle object fields
+                    if (fieldName.startsWith('_section_')) {
+                        // Section metadata - don't display in main table
+                        displayValue = '';
+                    } else {
+                        displayValue = '[Object]';
+                    }
+                } else {
+                    displayValue = String(value);
+                }
+
+                return `<td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${displayValue}</td>`;
+            }).join('')}
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">
+                                        <a href="/files/${filename}/edit/${item[currentData.primaryKey]}" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
+                                        <button onclick="deleteItem('${item[currentData.primaryKey]}')" class="text-red-600 hover:text-red-900">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = controls + table;
+            setupEventListeners();
+        }
+
+        // Setup event listeners for controls
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', function (e) {
+                currentData.search = e.target.value;
+                currentData.currentPage = 1;
+                loadItemsWithFilters();
+            });
+
+            // Sort field
+            document.getElementById('sortField').addEventListener('change', function (e) {
+                currentData.sortField = e.target.value;
+                currentData.currentPage = 1;
+                loadItemsWithFilters();
+            });
+
+            // Sort order
+            document.getElementById('sortOrder').addEventListener('change', function (e) {
+                currentData.sortOrder = e.target.value;
+                currentData.currentPage = 1;
+                loadItemsWithFilters();
+            });
+        }
+
+        // Load items with current filters
+        async function loadItemsWithFilters() {
+            try {
+                const params = new URLSearchParams({
+                    page: currentData.currentPage,
+                    search: currentData.search,
+                    sort: currentData.sortField,
+                    order: currentData.sortOrder
+                });
+
+                const response = await fetch(`/api/files/${filename}/items?${params}`);
+                const data = await response.json();
+
+                currentData.items = data.items || [];
+                currentData.totalPages = data.totalPages || 1;
+                currentData.currentPage = data.page || 1;
+
+                // Update fields from API response if available
+                if (data.fields && data.fields.length > 0) {
+                    currentData.fields = data.fields.map(fieldName => ({ name: fieldName, type: 'string' })); // Convert to field objects
+                }
+
+                displayItemsTable();
+            } catch (error) {
+                document.getElementById('fileContent').innerHTML = '<p class="text-red-500">Error loading items: ' + error.message + '</p>';
+            }
+        }
+
+        // Delete item
+        async function deleteItem(id) {
+            if (!confirm('Are you sure you want to delete this item?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/files/${filename}/items/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadItemsWithFilters(); // Reload items
+                } else {
+                    alert('Delete failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Delete error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

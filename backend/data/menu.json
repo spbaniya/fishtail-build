@@ -5,12 +5,10 @@
       {
         "category": "Appetizers",
         "description": "Crispy fried in spiced batter seasoned chicken strips served with homemade chutney.",
-        "dietaryInfo": [
-          "GF"
-        ],
+        "dietaryInfo": "GF",
         "id": "app-8",
         "name": "Chicken Pakora",
-        "price": "$9.99"
+        "price": "$19.99"
       },
       {
         "category": "Appetizers",
@@ -35,10 +33,10 @@
       {
         "category": "Appetizers",
         "description": "Himalayan spiced batter fried fish strips and potatoes fries served with homemade sauce.",
-        "dietaryInfo": [],
+        "dietaryInfo": "",
         "id": "app-11",
         "name": "Malekhu Fish \u0026 Chips",
-        "price": "$12.99"
+        "price": "$13.99"
       },
       {
         "category": "Appetizers",

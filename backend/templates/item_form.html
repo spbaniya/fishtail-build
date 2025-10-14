@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create/Edit Item</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-4">
+            <a href="/files" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Files</a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4" id="formTitle">Loading...</h1>
+
+            <form id="itemForm" class="space-y-4">
+                <div id="formFields">
+                    <p class="text-gray-500">Loading form...</p>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button type="submit"
+                        class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Create
+                        Item</button>
+                    <a href="/files" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get filename and item ID from URL
+        const urlParts = window.location.pathname.split('/');
+        const filename = urlParts[2]; // /files/{filename}/create or /files/{filename}/edit/{id}
+        const isEdit = urlParts.length > 4 && urlParts[3] === 'edit';
+        const itemId = isEdit ? urlParts[4] : null;
+
+        let currentSchema = null;
+        let currentItem = null;
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadFormData();
+        });
+
+        // Load form data and schema
+        async function loadFormData() {
+            try {
+                if (isEdit && itemId) {
+                    // Load existing item for editing
+                    const itemResponse = await fetch(`/api/files/${filename}/items/${itemId}`);
+                    const itemData = await itemResponse.json();
+                    currentItem = itemData;
+                    document.getElementById('formTitle').textContent = `Edit Item - ${filename}`;
+
+                    // Extract fields from the item data
+                    currentSchema = {
+                        fields: Object.keys(currentItem).filter(key => !key.startsWith('_section_')).map(key => ({
+                            name: key,
+                            type: typeof currentItem[key] === 'object' && currentItem[key] !== null ? 'array' : 'string',
+                            required: key === 'id' || key === 'name' // Basic required fields
+                        }))
+                    };
+                } else {
+                    document.getElementById('formTitle').textContent = `Create Item - ${filename}`;
+
+                    // For new items, we need to get fields from existing items
+                    try {
+                        const itemsResponse = await fetch(`/api/files/${filename}/items?pageSize=1`);
+                        const itemsData = await itemsResponse.json();
+                        if (itemsData.items && itemsData.items.length > 0) {
+                            const sampleItem = itemsData.items[0];
+                            currentSchema = {
+                                fields: Object.keys(sampleItem).filter(key => !key.startsWith('_section_')).map(key => ({
+                                    name: key,
+                                    type: typeof sampleItem[key] === 'object' && sampleItem[key] !== null ? 'array' : 'string',
+                                    required: key === 'id' || key === 'name'
+                                }))
+                            };
+                        } else {
+                            // Fallback schema for empty files
+                            currentSchema = {
+                                fields: [
+                                    { name: 'id', type: 'string', required: true },
+                                    { name: 'name', type: 'string', required: true },
+                                    { name: 'description', type: 'string', required: false }
+                                ]
+                            };
+                        }
+                    } catch (error) {
+                        // Fallback schema
+                        currentSchema = {
+                            fields: [
+                                { name: 'id', type: 'string', required: true },
+                                { name: 'name', type: 'string', required: true },
+                                { name: 'description', type: 'string', required: false }
+                            ]
+                        };
+                    }
+                }
+
+                displayForm();
+            } catch (error) {
+                document.getElementById('formFields').innerHTML = '<p class="text-red-500">Error loading form: ' + error.message + '</p>';
+            }
+        }
+
+        // Display form fields based on schema
+        function displayForm() {
+            const container = document.getElementById('formFields');
+
+            if (!currentSchema || !currentSchema.fields) {
+                container.innerHTML = '<p class="text-red-500">Schema not available</p>';
+                return;
+            }
+
+            const fieldsHtml = currentSchema.fields.map(field => {
+                const value = currentItem ? currentItem[field.name] || '' : '';
+
+                let inputHtml = '';
+
+                if (field.type === 'boolean') {
+                    inputHtml = `
+                        <div class="mt-1">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="${field.name}" ${value ? 'checked' : ''} class="form-checkbox h-5 w-5 text-indigo-600">
+                                <span class="ml-2 text-sm text-gray-700">${field.name}</span>
+                            </label>
+                        </div>
+                    `;
+                } else if (field.enum && field.enum.length > 0) {
+                    inputHtml = `
+                        <select name="${field.name}" required="${field.required || false}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Select ${field.name}</option>
+                            ${field.enum.map(option => `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`).join('')}
+                        </select>
+                    `;
+                } else if (field.type === 'array') {
+                    inputHtml = `
+                        <input type="text" name="${field.name}" value="${Array.isArray(value) ? value.join(',') : value}" placeholder="Comma-separated values"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    `;
+                } else if (field.type === 'number' || field.type === 'integer') {
+                    inputHtml = `
+                        <input type="${field.type === 'integer' ? 'number' : 'number'}" name="${field.name}" value="${value}" step="${field.type === 'integer' ? '1' : 'any'}"
+                               required="${field.required || false}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    `;
+                } else {
+                    inputHtml = `
+                        <input type="text" name="${field.name}" value="${value}"
+                               required="${field.required || false}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    `;
+                }
+
+                return `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">${field.name}</label>
+                        ${inputHtml}
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${fieldsHtml}
+                </div>
+            `;
+        }
+
+        // Handle form submission
+        document.getElementById('itemForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const itemData = {};
+
+            // Collect form data
+            for (let [key, value] of formData.entries()) {
+                if (value === 'on') {
+                    itemData[key] = true; // Checkbox handling
+                } else if (value.includes(',')) {
+                    itemData[key] = value.split(',').map(v => v.trim()); // Array handling
+                } else {
+                    itemData[key] = value;
+                }
+            }
+
+            // For menu.json, include section information
+            if (filename === 'menu.json' && currentItem) {
+                itemData._section_title = currentItem._section_title;
+                itemData._section_image = currentItem._section_image;
+                itemData._section_subtitle = currentItem._section_subtitle;
+            }
+
+            try {
+                const url = isEdit && itemId
+                    ? `/api/files/${filename}/items/${itemId}`
+                    : `/api/files/${filename}/items`;
+
+                const response = await fetch(url, {
+                    method: 'POST', // Both create and update use POST
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(itemData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = `/files/${filename}`;
+                } else {
+                    alert('Save failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Save error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>
