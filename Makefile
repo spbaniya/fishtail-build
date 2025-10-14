@@ -22,6 +22,9 @@ setup: install
 # Build all components
 build: build-frontend build-backend create-build-dir
 
+# Build all components for Linux Ubuntu
+build-linux: build-frontend build-backend-linux create-build-dir-linux
+
 # Build frontend
 build-frontend:
 	@echo "Building frontend..."
@@ -31,6 +34,11 @@ build-frontend:
 build-backend:
 	@echo "Building backend..."
 	cd backend && go build -o server .
+
+# Build backend for Linux Ubuntu
+build-backend-linux:
+	@echo "Building backend for Linux Ubuntu..."
+	cd backend && GOOS=linux GOARCH=amd64 go build -o server-linux .
 
 # Create build directory with all assets
 create-build-dir: build-frontend build-backend
@@ -46,6 +54,21 @@ create-build-dir: build-frontend build-backend
 	@echo "Copying backend data..."
 	@cp -r backend/data build/
 	@echo "Build complete! Assets are in ./build/"
+
+# Create build directory with Linux assets
+create-build-dir-linux: build-frontend build-backend-linux
+	@echo "Creating Linux build directory..."
+	@mkdir -p build
+	@rm -rf build/dist
+	@rm -rf build/data
+	@rm -rf build/server
+	@echo "Copying frontend assets..."
+	@mv dist build/ 2>/dev/null || true
+	@echo "Copying Linux backend binary..."
+	@mv backend/server-linux build/server
+	@echo "Copying backend data..."
+	@cp -r backend/data build/
+	@echo "Linux build complete! Assets are in ./build/"
 
 # Clean build artifacts
 clean:
@@ -102,9 +125,12 @@ help:
 	@echo "  make install          - Install all dependencies"
 	@echo "  make setup            - Setup development environment"
 	@echo "  make build            - Build frontend, backend and create build directory"
+	@echo "  make build-linux      - Build frontend, backend for Linux and create build directory"
 	@echo "  make build-frontend   - Build only frontend"
 	@echo "  make build-backend    - Build only backend"
+	@echo "  make build-backend-linux - Build only backend for Linux Ubuntu"
 	@echo "  make create-build-dir - Create build directory with all assets"
+	@echo "  make create-build-dir-linux - Create build directory with Linux assets"
 	@echo "  make clean            - Clean all build artifacts"
 	@echo "  make dev-frontend     - Start frontend dev server"
 	@echo "  make dev-backend      - Start backend dev server"
