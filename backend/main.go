@@ -2,14 +2,56 @@ package main
 
 import (
 	"backend/pkg"
+	"flag"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/oarkflow/jsonschema"
 )
 
 func main() {
-	NewServer("./data").app.Listen(":8080")
+	// Define command-line flags
+	dataDir := flag.String("data-dir", "./data", "Directory containing data files")
+	allowedFiles := flag.String("files", "", "Comma-separated list of allowed files (empty means all files)")
+	port := flag.String("port", "3003", "Port to run the server on")
+	help := flag.Bool("help", false, "Show help information")
+
+	flag.Parse()
+
+	if *help {
+		fmt.Println("File Manager Server")
+		fmt.Println()
+		fmt.Println("Usage:")
+		flag.PrintDefaults()
+		fmt.Println()
+		fmt.Println("Examples:")
+		fmt.Println("  ./server -data-dir=./data -port=8080")
+		fmt.Println("  ./server -files=menu.json,users.json -port=3000")
+		return
+	}
+
+	// Parse allowed files
+	var restrictedFiles []string
+	if *allowedFiles != "" {
+		restrictedFiles = strings.Split(*allowedFiles, ",")
+		// Trim spaces
+		for i, file := range restrictedFiles {
+			restrictedFiles[i] = strings.TrimSpace(file)
+		}
+	}
+
+	fmt.Printf("Starting server on port %s\n", *port)
+	fmt.Printf("Data directory: %s\n", *dataDir)
+	if len(restrictedFiles) > 0 {
+		fmt.Printf("Allowed files: %v\n", restrictedFiles)
+	} else {
+		fmt.Println("Allowed files: all")
+	}
+
+	server := NewServer(*dataDir)
+	server.restrictFiles = restrictedFiles
+	server.app.Listen(":" + *port)
 }
 
 func main1() {

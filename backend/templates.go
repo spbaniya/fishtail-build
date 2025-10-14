@@ -136,7 +136,7 @@ const fileViewTemplate = `<!DOCTYPE html>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <div class="mb-4">
-            <a href="/" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Files</a>
+            <a href="/files" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Files</a>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -213,7 +213,7 @@ const itemFormTemplate = `<!DOCTYPE html>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <div class="mb-4">
-            <a href="/" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Files</a>
+            <a href="/files" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Files</a>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">

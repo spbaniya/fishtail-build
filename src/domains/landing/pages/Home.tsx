@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/fishtail/Navigation";
 import Hero from "@/components/fishtail/Hero";
 import MenuFilters, { DietaryFilter } from "@/components/fishtail/MenuFilters";
@@ -6,10 +6,65 @@ import MenuSection from "@/components/fishtail/MenuSection";
 import About from "@/components/fishtail/About";
 import Location from "@/components/fishtail/Location";
 import Footer from "@/components/fishtail/Footer";
-import { menuCategories, filterMenuItems } from "@/data/menuData.tsx";
+import { getMenuCategories, filterMenuItems } from "@/data/menuData.tsx";
+import { MenuItemData } from "@/components/fishtail/MenuItem";
+
+interface MenuCategory {
+    title: string;
+    subtitle: string;
+    image: string;
+    items: MenuItemData[];
+}
 
 export default function Home() {
     const [activeFilter, setActiveFilter] = useState<DietaryFilter>('all');
+    const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchMenu = async () => {
+            try {
+                setLoading(true);
+                const categories = await getMenuCategories();
+                setMenuCategories(categories);
+            } catch (err) {
+                console.error('Failed to load menu:', err);
+                setError('Failed to load menu data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMenu();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading menu...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen">

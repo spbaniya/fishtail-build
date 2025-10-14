@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/pkg"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -11,12 +12,25 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Server struct {
-	app         *fiber.App
-	fileManager *pkg.FileManager
-	dataDir     string
+	app           *fiber.App
+	fileManager   *pkg.FileManager
+	dataDir       string
+	restrictFiles []string
+	users         []User
+}
+
+type User struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Email        string `json:"email"`
+	Password     string `json:"password,omitempty"` // Hashed password
+	Age          int    `json:"age"`
+	Active       bool   `json:"active"`
+	LastModified string `json:"lastModified,omitempty"`
 }
 
 type FileInfo struct {
@@ -45,7 +59,7 @@ type TemplateData struct {
 	SortOrder   string
 }
 
-func NewServer(dataDir string) *Server {
+func NewServer(dataDir string, restrictFiles ...string) *Server {
 	// Create Fiber app (using embedded templates)
 	app := fiber.New()
 
@@ -58,13 +72,157 @@ func NewServer(dataDir string) *Server {
 		dataDir: dataDir,
 	}
 
+	// Load users for authentication
+	if err := server.loadUsers(); err != nil {
+		log.Printf("Warning: Failed to load users: %v", err)
+	}
+	app.Static("/", "./dist", fiber.Static{
+		Index:    "index.html",
+		Compress: true,
+		Browse:   true,
+	})
+	server.publicRoutes()
 	server.setupRoutes()
 	return server
 }
 
+// loadUsers loads user data from users.json file
+func (s *Server) loadUsers() error {
+	userFilePath := filepath.Join(s.dataDir, "users.json")
+	fm, err := pkg.NewFileManager(userFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to create user file manager: %w", err)
+	}
+
+	usersData, err := fm.Read()
+	if err != nil {
+		return fmt.Errorf("failed to read users: %w", err)
+	}
+
+	s.users = make([]User, 0, len(usersData))
+	for _, userData := range usersData {
+		user := User{
+			ID:     fmt.Sprintf("%v", userData["id"]),
+			Name:   fmt.Sprintf("%v", userData["name"]),
+			Email:  fmt.Sprintf("%v", userData["email"]),
+			Active: userData["active"] == true,
+		}
+		if age, ok := userData["age"].(float64); ok {
+			user.Age = int(age)
+		}
+		if lastMod, ok := userData["lastModified"].(string); ok {
+			user.LastModified = lastMod
+		}
+
+		// Handle password - if not present, use default and hash it
+		if password, ok := userData["password"].(string); ok && password != "" {
+			// If password is already hashed (bcrypt format), use it
+			if strings.HasPrefix(password, "$2a$") || strings.HasPrefix(password, "$2b$") || strings.HasPrefix(password, "$2y$") {
+				user.Password = password
+			} else {
+				// Plain text password, hash it
+				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+				if err != nil {
+					log.Printf("Warning: Failed to hash password for user %s: %v", user.Email, err)
+					continue
+				}
+				user.Password = string(hashedPassword)
+			}
+		} else {
+			// No password set, use default password "password123" and hash it
+			defaultPassword := "password123"
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(defaultPassword), bcrypt.DefaultCost)
+			if err != nil {
+				log.Printf("Warning: Failed to hash default password for user %s: %v", user.Email, err)
+				continue
+			}
+			user.Password = string(hashedPassword)
+		}
+
+		if user.Active {
+			s.users = append(s.users, user)
+		}
+	}
+
+	return nil
+}
+
+// authenticateUser validates user credentials
+func (s *Server) authenticateUser(email, password string) (*User, bool) {
+	for _, user := range s.users {
+		if user.Email == email && user.Active {
+			// Verify hashed password
+			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+			if err == nil {
+				return &user, true
+			}
+		}
+	}
+	return nil, false
+}
+
+// basicAuthMiddleware provides HTTP Basic Authentication
+func (s *Server) basicAuthMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		auth := c.Get("Authorization")
+		if auth == "" {
+			return s.unauthorized(c)
+		}
+
+		if !strings.HasPrefix(auth, "Basic ") {
+			return s.unauthorized(c)
+		}
+
+		encodedCredentials := strings.TrimPrefix(auth, "Basic ")
+		decodedCredentials, err := base64.StdEncoding.DecodeString(encodedCredentials)
+		if err != nil {
+			return s.unauthorized(c)
+		}
+
+		credentials := string(decodedCredentials)
+		parts := strings.SplitN(credentials, ":", 2)
+		if len(parts) != 2 {
+			return s.unauthorized(c)
+		}
+
+		username, password := parts[0], parts[1]
+		user, authenticated := s.authenticateUser(username, password)
+		if !authenticated {
+			return s.unauthorized(c)
+		}
+
+		// Store user in context for later use
+		c.Locals("user", user)
+		return c.Next()
+	}
+}
+
+// unauthorized sends a 401 Unauthorized response
+func (s *Server) unauthorized(c *fiber.Ctx) error {
+	c.Set("WWW-Authenticate", `Basic realm="File Manager"`)
+	return c.Status(401).JSON(fiber.Map{
+		"error": "Authentication required",
+	})
+}
+
+func (s *Server) publicRoutes() {
+	s.app.Get("/get/:filename", s.handleGetFileContent)
+	s.app.Get("/api/userinfo", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"success": true,
+			"data": fiber.Map{
+				"name": "Guest User",
+			},
+		})
+	})
+}
+
 func (s *Server) setupRoutes() {
+	// Apply authentication middleware to all routes except public ones
+	s.app.Use(s.basicAuthMiddleware())
+
 	// Main routes
-	s.app.Get("/", s.handleHome)
+	s.app.Get("/files", s.handleHome)
 	s.app.Get("/files/:filename", s.handleFileView)
 	s.app.Get("/files/:filename/create", s.handleCreateForm)
 	s.app.Get("/files/:filename/edit/:id", s.handleEditForm)
@@ -302,6 +460,45 @@ func (s *Server) handleSearch(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"results": results})
 }
 
+func (s *Server) handleGetFileContent(c *fiber.Ctx) error {
+	filename := c.Params("filename")
+	for _, file := range s.restrictFiles {
+		if strings.Contains(filename, file) {
+			return c.Redirect("/")
+		}
+	}
+	filePath := filepath.Join(s.dataDir, filename)
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return c.Status(404).JSON(fiber.Map{"error": "File not found"})
+	}
+
+	// Read file content
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to read file"})
+	}
+
+	// Set appropriate content type based on file extension
+	ext := strings.ToLower(filepath.Ext(filename))
+	var contentType string
+	switch ext {
+	case ".json":
+		contentType = "application/json"
+	case ".yaml", ".yml":
+		contentType = "application/yaml"
+	case ".csv":
+		contentType = "text/csv"
+	case ".xml":
+		contentType = "application/xml"
+	default:
+		contentType = "text/plain"
+	}
+
+	c.Set("Content-Type", contentType)
+	return c.Send(content)
+}
+
 func (s *Server) handleCreateItem(c *fiber.Ctx) error {
 	filename := c.Params("filename")
 
@@ -412,11 +609,7 @@ func (s *Server) handleUpdateItem(c *fiber.Ctx) error {
 		}
 	}
 
-	if !updated {
-		return c.Status(404).JSON(fiber.Map{"error": "Item not found"})
-	}
-
-	return c.JSON(fiber.Map{"success": true, "message": "Item updated"})
+	return c.Redirect(fmt.Sprintf("/files/%s", filename), 302)
 }
 
 func (s *Server) handleDeleteItem(c *fiber.Ctx) error {
@@ -523,6 +716,20 @@ func (s *Server) getAvailableFiles() ([]FileInfo, error) {
 		ext := filepath.Ext(name)
 		if ext == "" {
 			continue
+		}
+
+		// Check if file is in the allowed list (if restrictions are set)
+		if len(s.restrictFiles) > 0 {
+			allowed := false
+			for _, allowedFile := range s.restrictFiles {
+				if allowedFile == name {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				continue
+			}
 		}
 
 		filePath := filepath.Join(s.dataDir, name)
