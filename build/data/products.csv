@@ -1,0 +1,11 @@
+description,weight_kg,price,category,in_stock,name,tags,id
+High-performance laptop for professionals,2.5,1299.99,Electronics,false,Laptop Computer,[gaming productivity],prod-1
+Ergonomic wireless mouse with long battery life,0.1,29.99,Electronics,true,Wireless Mouse,accessory,wireless,prod-2
+Ceramic coffee mug with company logo,0.3,12.50,Home & Kitchen,true,Coffee Mug,kitchen,ceramic,prod-3
+Comfortable office chair with lumbar support,15.2,199.99,Furniture,true,Office Chair,furniture,office,prod-4
+High-speed USB-C charging cable,0.05,15.99,Electronics,true,USB Cable,accessory,cable,prod-5
+LED desk lamp with adjustable brightness,1.1,45.00,Home & Kitchen,true,Desk Lamp,lighting,led,prod-6
+Portable Bluetooth speaker with excellent sound quality,0.8,79.99,Electronics,false,Bluetooth Speaker,audio,portable,prod-7
+Stainless steel insulated water bottle,0.4,25.00,Sports & Outdoors,true,Water Bottle,hydration,insulated,prod-8
+Men's running shoes with advanced cushioning,0.7,89.99,Sports & Outdoors,true,Running Shoes,footwear,running,prod-9
+Hardcover notebook for journaling,0.2,8.99,Office Supplies,true,Notebook,paper,writing,prod-10
