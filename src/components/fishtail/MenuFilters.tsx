@@ -42,25 +42,51 @@ export default function MenuFilters({ activeFilter, onFilterChange, mode = 'diet
     const filters = mode === 'dietary' ? dietaryFilters : sectionFilters;
 
     return (
-        <div className="sticky top-20 z-40 bg-background/95 backdrop-blur-md border-b border-border py-5">
+        <div className="sticky top-24 z-40 bg-background/95 backdrop-blur-md border-b border-border py-5">
             <div className="max-w-6xl mx-auto px-6">
-                <div className="flex flex-wrap gap-3 items-center">
-                    <span className="text-sm font-semibold text-muted-foreground mr-2">
-                        Filter by {mode === 'dietary' ? 'diet:' : 'section:'}
-                    </span>
-                    {filters.map((filter) => (
-                        <Badge
-                            key={filter.value}
-                            variant={activeFilter === filter.value ? "default" : "outline"}
-                            className={`cursor-pointer px-5 py-2 text-sm font-medium hover-elevate transition-all ${activeFilter === filter.value ? 'bg-primary text-primary-foreground shadow-md' : 'hover:border-primary/50'
-                                }`}
-                            onClick={() => onFilterChange(filter.value)}
-                            data-testid={`filter-${filter.value}`}
-                        >
-                            {filter.label}
-                        </Badge>
-                    ))}
-                </div>
+                {mode === 'dietary' ? (
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">
+                            Filter by diet:
+                        </span>
+                        <div className="flex flex-wrap gap-3 items-center">
+                            {filters.map((filter) => (
+                                <Badge
+                                    key={filter.value}
+                                    variant={activeFilter === filter.value ? "default" : "outline"}
+                                    className={`cursor-pointer px-5 py-2 text-sm font-medium hover-elevate transition-all ${activeFilter === filter.value ? 'bg-primary text-primary-foreground shadow-md' : 'hover:border-primary/50'
+                                        }`}
+                                    onClick={() => onFilterChange(filter.value)}
+                                    data-testid={`filter-${filter.value}`}
+                                >
+                                    {filter.label}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-2 w-full">
+                        <span className="text-sm font-semibold text-muted-foreground text-center">
+                            Filter by section:
+                        </span>
+                        <div className="overflow-x-auto w-full">
+                            <div className="flex gap-3 items-center flex-nowrap min-w-max py-2">
+                                {filters.map((filter) => (
+                                    <Badge
+                                        key={filter.value}
+                                        variant={activeFilter === filter.value ? "default" : "outline"}
+                                        className={`cursor-pointer px-5 py-2 text-sm font-medium hover-elevate transition-all whitespace-nowrap ${activeFilter === filter.value ? 'bg-primary text-primary-foreground shadow-md' : 'hover:border-primary/50'
+                                            }`}
+                                        onClick={() => onFilterChange(filter.value)}
+                                        data-testid={`filter-${filter.value}`}
+                                    >
+                                        {filter.label}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
