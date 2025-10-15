@@ -142,13 +142,23 @@ export function filterMenuItems(items: MenuItemData[], filter: string): MenuItem
 export function filterMenuCategories(categories: MenuCategory[], sectionFilter: string): MenuCategory[] {
     if (sectionFilter === 'all') return categories;
 
-    // Map section filter values to actual category names
+    // Map section filter values to actual category names from API
     const sectionMapping: { [key: string]: string[] } = {
-        'appetizers': ['appetizers', 'appetizer'],
-        'tandoori': ['tandoori'],
+        'appetizers-nonveg': ['appetizers - non veg'],
+        'appetizers-veg': ['appetizers - vegetable'],
+        'beverages': ['beverages'],
         'biryani': ['biryani'],
-        'everest': ['everest', 'mt. everest', 'mt everest'],
-        'bread': ['bread', 'naan']
+        'desserts': ['desserts'],
+        'everest': ['from the mt. everest base camp', 'mt. everest'],
+        'chicken': ['meat lovers - chicken'],
+        'lamb': ['meat lovers - lamb and goat'],
+        'seafood': ['seafood lovers'],
+        'sides': ['side orders'],
+        'soup': ['soup and salad'],
+        'tandoori': ['tandoori festive'],
+        'bread': ['tandoori naan (bread)'],
+        'vegetarian': ['vegetarian lovers'],
+        'whole-wheat': ['whole wheat breads']
     };
 
     const searchTerms = sectionMapping[sectionFilter.toLowerCase()] || [sectionFilter.toLowerCase()];

@@ -1,7 +1,7 @@
 import { Badge } from "@/shared/components/ui/badge";
 
 export type DietaryFilter = 'all' | 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free';
-export type SectionFilter = 'all' | 'appetizers' | 'tandoori' | 'biryani' | 'everest' | 'bread';
+export type SectionFilter = 'all' | 'appetizers-nonveg' | 'appetizers-veg' | 'beverages' | 'biryani' | 'desserts' | 'everest' | 'chicken' | 'lamb' | 'seafood' | 'sides' | 'soup' | 'tandoori' | 'bread' | 'vegetarian' | 'whole-wheat';
 
 export type FilterMode = 'dietary' | 'section';
 
@@ -22,11 +22,21 @@ export default function MenuFilters({ activeFilter, onFilterChange, mode = 'diet
 
     const sectionFilters: { label: string; value: SectionFilter; color?: string }[] = [
         { label: 'All', value: 'all' },
-        { label: 'Appetizers', value: 'appetizers' },
-        { label: 'Tandoori & Grill', value: 'tandoori' },
-        { label: 'Biryani & Rice', value: 'biryani' },
-        { label: 'Nepalese Specials', value: 'everest' },
-        { label: 'Bread & Naan', value: 'bread' },
+        { label: 'Appetizers - Non Veg', value: 'appetizers-nonveg' },
+        { label: 'Appetizers - Vegetable', value: 'appetizers-veg' },
+        { label: 'Beverages', value: 'beverages' },
+        { label: 'Biryani', value: 'biryani' },
+        { label: 'Desserts', value: 'desserts' },
+        { label: 'From the Mt. Everest Base Camp', value: 'everest' },
+        { label: 'Meat Lovers - Chicken', value: 'chicken' },
+        { label: 'Meat Lovers - Lamb and Goat', value: 'lamb' },
+        { label: 'Seafood Lovers', value: 'seafood' },
+        { label: 'Side Orders', value: 'sides' },
+        { label: 'Soup and Salad', value: 'soup' },
+        { label: 'Tandoori Festive', value: 'tandoori' },
+        { label: 'Tandoori Naan (Bread)', value: 'bread' },
+        { label: 'Vegetarian Lovers', value: 'vegetarian' },
+        { label: 'Whole Wheat Breads', value: 'whole-wheat' },
     ];
 
     const filters = mode === 'dietary' ? dietaryFilters : sectionFilters;
