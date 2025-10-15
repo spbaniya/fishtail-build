@@ -54,7 +54,7 @@ export default function Hero() {
                     </a>
                 </div>
 
-                <div className="flex justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button
                         size="lg"
                         className="text-xl px-12 py-8 bg-primary hover:bg-primary/90 border-2 border-primary-border font-bold shadow-2xl hover:shadow-primary/50 hover:scale-105 transition-all duration-300"
@@ -63,6 +63,20 @@ export default function Hero() {
                     >
                         Explore Our Menu
                     </Button>
+                    <a
+                        href="https://www.chownow.com/order/27651/locations/61166?utm_source=google&utm_medium=organic&utm_campaign=place_action&rwg_token=ACgRB3fxfaenglBKHqTmnKRylwCYyrnsAG4tOdDVg0RWwYBqIfT88Dv4eOGMC0BP7yZZxkgDL8NVGQDRyiabHHehJsM0G1kSVQ%3D%3D"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-testid="button-order-hero"
+                    >
+                        <Button
+                            size="lg"
+                            variant="secondary"
+                            className="text-xl px-12 py-8 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 font-bold shadow-2xl hover:shadow-white/20 hover:scale-105 transition-all duration-300"
+                        >
+                            Order Now
+                        </Button>
+                    </a>
                 </div>
             </div>
         </section>

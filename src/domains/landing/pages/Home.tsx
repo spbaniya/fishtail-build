@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import Navigation from "@/components/fishtail/Navigation";
 import Hero from "@/components/fishtail/Hero";
-import MenuFilters, { DietaryFilter } from "@/components/fishtail/MenuFilters";
+import MenuFilters, { DietaryFilter, SectionFilter } from "@/components/fishtail/MenuFilters";
 import MenuSection from "@/components/fishtail/MenuSection";
 import About from "@/components/fishtail/About";
 import Location from "@/components/fishtail/Location";
 import Footer from "@/components/fishtail/Footer";
-import { getMenuCategories, filterMenuItems } from "@/data/menuData.tsx";
+import { getMenuCategories, filterMenuItems, filterMenuCategories } from "@/data/menuData.tsx";
 import { MenuItemData } from "@/components/fishtail/MenuItem";
 
 interface MenuCategory {
@@ -17,7 +17,8 @@ interface MenuCategory {
 }
 
 export default function Home() {
-    const [activeFilter, setActiveFilter] = useState<DietaryFilter>('all');
+    const [activeFilter, setActiveFilter] = useState<DietaryFilter | SectionFilter>('all');
+    const [filterMode, setFilterMode] = useState<'dietary' | 'section'>('section');
     const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -87,21 +88,42 @@ export default function Home() {
                         </p>
                     </div>
 
-                    <MenuFilters activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+                    <MenuFilters
+                        activeFilter={activeFilter}
+                        onFilterChange={setActiveFilter}
+                        mode={filterMode}
+                    />
 
                     <div className="mt-12 space-y-16">
-                        {menuCategories.map((category, idx) => {
-                            const filteredItems = filterMenuItems(category.items, activeFilter);
-                            return (
-                                <MenuSection
-                                    key={idx}
-                                    title={category.title}
-                                    subtitle={category.subtitle}
-                                    items={filteredItems}
-                                    image={category.image}
-                                />
-                            );
-                        })}
+                        {(() => {
+                            if (filterMode === 'section') {
+                                // Filter categories by section
+                                const filteredCategories = filterMenuCategories(menuCategories, activeFilter);
+                                return filteredCategories.map((category, idx) => (
+                                    <MenuSection
+                                        key={idx}
+                                        title={category.title}
+                                        subtitle={category.subtitle}
+                                        items={category.items}
+                                        image={category.image}
+                                    />
+                                ));
+                            } else {
+                                // Filter items within categories by dietary preference
+                                return menuCategories.map((category, idx) => {
+                                    const filteredItems = filterMenuItems(category.items, activeFilter);
+                                    return (
+                                        <MenuSection
+                                            key={idx}
+                                            title={category.title}
+                                            subtitle={category.subtitle}
+                                            items={filteredItems}
+                                            image={category.image}
+                                        />
+                                    );
+                                });
+                            }
+                        })()}
                     </div>
                 </div>
             </section>

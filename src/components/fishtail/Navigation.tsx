@@ -65,6 +65,16 @@ export default function Navigation() {
                                     <span className="hidden lg:inline">Call Now</span>
                                 </Button>
                             </a>
+                            <a
+                                href="https://www.chownow.com/order/27651/locations/61166?utm_source=google&utm_medium=organic&utm_campaign=place_action&rwg_token=ACgRB3fxfaenglBKHqTmnKRylwCYyrnsAG4tOdDVg0RWwYBqIfT88Dv4eOGMC0BP7yZZxkgDL8NVGQDRyiabHHehJsM0G1kSVQ%3D%3D"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                data-testid="button-order"
+                            >
+                                <Button variant="secondary" className="gap-2 font-semibold shadow-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                                    Order Now
+                                </Button>
+                            </a>
                         </div>
 
                         <button
@@ -96,6 +106,16 @@ export default function Navigation() {
                             <Button size="lg" className="gap-2">
                                 <Phone className="w-5 h-5" />
                                 Call Now
+                            </Button>
+                        </a>
+                        <a
+                            href="https://www.chownow.com/order/27651/locations/61166?utm_source=google&utm_medium=organic&utm_campaign=place_action&rwg_token=ACgRB3fxfaenglBKHqTmnKRylwCYyrnsAG4tOdDVg0RWwYBqIfT88Dv4eOGMC0BP7yZZxkgDL8NVGQDRyiabHHehJsM0G1kSVQ%3D%3D"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-testid="button-mobile-order"
+                        >
+                            <Button size="lg" variant="secondary" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                                Order Now
                             </Button>
                         </a>
                     </div>

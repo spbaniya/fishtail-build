@@ -38,11 +38,20 @@ export async function fetchMenuData(): Promise<MenuCategory[]> {
         }
         const data = await response.json();
 
+        // Handle both single category and array of categories
+        let categories: any[] = [];
+        if (Array.isArray(data)) {
+            categories = data;
+        } else if (data && typeof data === 'object') {
+            // If it's a single category object, wrap it in an array
+            categories = [data];
+        }
+
         // Cache the data
-        menuDataCache = data;
+        menuDataCache = categories;
         cacheTimestamp = Date.now();
 
-        return data;
+        return categories;
     } catch (error) {
         console.error('Error fetching menu data:', error);
         // Return empty array as fallback
@@ -58,14 +67,28 @@ export async function getMenuCategories(): Promise<MenuCategory[]> {
         title: category.title || '',
         subtitle: category.subtitle || '',
         image: categoryImages[category.title] || categoryImages.default,
-        items: (category.items || []).map((item: any) => ({
-            id: item.id || '',
-            name: item.name || '',
-            description: item.description || '',
-            price: item.price || '',
-            category: item.category || '',
-            dietaryInfo: Array.isArray(item.dietaryInfo) ? item.dietaryInfo.filter((info: any) => info && info.trim() !== '') : []
-        }))
+        items: (category.items || []).map((item: any) => {
+            // Handle dietaryInfo as either string or array
+            let dietaryInfo: string[] = [];
+            if (Array.isArray(item.dietaryInfo)) {
+                dietaryInfo = item.dietaryInfo.filter((info: any) => info && info.trim() !== '');
+            } else if (typeof item.dietaryInfo === 'string') {
+                // Split string by common separators and filter empty values
+                dietaryInfo = item.dietaryInfo
+                    .split(/[,;]/)
+                    .map((info: string) => info.trim())
+                    .filter((info: string) => info !== '');
+            }
+
+            return {
+                id: item.id || '',
+                name: item.name || '',
+                description: item.description || '',
+                price: item.price || '',
+                category: item.category || '',
+                dietaryInfo: dietaryInfo
+            };
+        })
     }));
 }
 
@@ -77,15 +100,60 @@ export function filterMenuItems(items: MenuItemData[], filter: string): MenuItem
     if (filter === 'all') return items;
 
     return items.filter(item => {
-        if (filter === 'veg') {
-            return item.dietaryInfo.includes('Vegetarian');
+        const dietaryInfo = item.dietaryInfo || [];
+
+        switch (filter) {
+            case 'vegetarian':
+                return dietaryInfo.some(info =>
+                    info.toLowerCase().includes('vegetarian') ||
+                    info.toLowerCase().includes('veg')
+                );
+            case 'vegan':
+                return dietaryInfo.some(info =>
+                    info.toLowerCase().includes('vegan')
+                );
+            case 'gluten-free':
+                return dietaryInfo.some(info =>
+                    info.toLowerCase().includes('gluten free') ||
+                    info.toLowerCase().includes('gf')
+                );
+            case 'dairy-free':
+                return dietaryInfo.some(info =>
+                    info.toLowerCase().includes('dairy free') ||
+                    info.toLowerCase().includes('df')
+                );
+            case 'veg':
+                return dietaryInfo.some(info =>
+                    info.toLowerCase().includes('vegetarian') ||
+                    info.toLowerCase().includes('veg')
+                );
+            case 'non-veg':
+                return !dietaryInfo.some(info =>
+                    info.toLowerCase().includes('vegetarian') ||
+                    info.toLowerCase().includes('veg')
+                );
+            default:
+                return true;
         }
-        if (filter === 'non-veg') {
-            return !item.dietaryInfo.includes('Vegetarian');
-        }
-        if (filter === 'gluten-free') {
-            return item.dietaryInfo.includes('Gluten Free');
-        }
-        return true;
     });
+}
+
+// Filter menu categories by section
+export function filterMenuCategories(categories: MenuCategory[], sectionFilter: string): MenuCategory[] {
+    if (sectionFilter === 'all') return categories;
+
+    // Map section filter values to actual category names
+    const sectionMapping: { [key: string]: string[] } = {
+        'appetizers': ['appetizers', 'appetizer'],
+        'tandoori': ['tandoori'],
+        'biryani': ['biryani'],
+        'everest': ['everest', 'mt. everest', 'mt everest'],
+        'bread': ['bread', 'naan']
+    };
+
+    const searchTerms = sectionMapping[sectionFilter.toLowerCase()] || [sectionFilter.toLowerCase()];
+
+    return categories.filter(category =>
+        searchTerms.some(term => category.title.toLowerCase().includes(term))
+    );
 }
